@@ -13,7 +13,7 @@
   Class.inherit = function(Parent, protoProps) {
     var Child = (protoProps && has.call(protoProps, 'constructor'))
       ? protoProps.constructor
-      : function() { Parent.apply(this, arguments); };
+      : function() { return Parent.apply(this, arguments); };
 
     for (var property in Parent) {
       if (has.call(Parent, property)) {
