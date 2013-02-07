@@ -1,37 +1,47 @@
 (function() {
 
   module('Class', {
-    
     setup: function() {
-      var log = console.log;
-      window.console.log = function(message) {
-        if (typeof logMsgs === 'undefined') window.logMsgs = [];
-        logMsgs.push(message);
-        return log.call(console, message);
+      var getLogger = function(name) {
+        return {
+          stack: [],
+          log: function(message) {
+            this.stack.push(message);
+            return console.log(name + ' ' + message);
+          }
+        };
       };
+      var logger = this.logger = getLogger('[Class]');
       window.Model = Class.extend({
+        properties: {
+          name: 'Model',
+          description: 'Demonstraton purposes'
+        },
         constructor: function() {
-          console.log('Creating Model...');
+          logger.log('Creating Model');
         },
         save: function() {
-          console.log('Saving Model...');
+          logger.log('Saving Model');
         }
       });
       window.MegaModel = Model.extend({
+        properties: {
+          name: 'MegaModel',
+          description: 'Demonstraton purposes only'
+        },
         constructor: function() {
           this.__super__.constructor.apply(this, arguments);
-          console.log('Creating MegaModel...');
+          logger.log('Creating MegaModel');
         },
         save: function() {
           this.__super__.save();
-          console.log('Saving MegaModel');
+          logger.log('Saving MegaModel');
         }
       });
     },
     teardown: function() {
-      // delete logMsgs;
-      // delete window.Model;
-      // delete window.MegaModel;
+      delete window.Model;
+      delete window.MegaModel;
     }
   });
 
@@ -46,14 +56,16 @@
     var model = new Model();
     ok(model instanceof Model);
     model.save();
-    ok(logMsgs.pop().search(/\bmodel\b/i) > -1, 'Method "save" works');
+    ok(this.logger.stack.pop().search(/\bmodel\b/i) > -1, 'Method "save" works');
   });
 
   test('MegaModel Class', function() {
     var model = new MegaModel();
     ok(model instanceof MegaModel);
     model.save();
-    ok(logMsgs.pop().search(/\bmegamodel\b/i) > -1, 'Method "save" works');
+    ok(this.logger.stack.pop().search(/\bmegamodel\b/i) > -1, 'Own method works');
+    ok(this.logger.stack.pop().search(/\bmodel\b/i) > -1, 'Inherited method works');
+    equal(model.properties.name, 'MegaModel', 'Static properties are inheried');
   });
 
 })();
